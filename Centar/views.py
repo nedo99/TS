@@ -7,6 +7,7 @@ from django import forms
 from django.forms import CharField, Form, PasswordInput
 from django.http import Http404
 from datetime import datetime
+from datetime import date, timedelta
 from django.utils.timezone import utc
 from django.utils import timezone
 
@@ -121,9 +122,51 @@ def user(request, u_id):
     korisnik = Korisnici.objects.get(id = u_id)
     kid = korisnik.id
     rezervacije_count = Rezervacije.objects.filter(korisnik = korisnik).count()
+    rezervacije = 0
     if rezervacije_count > 0:
       rezervacije = Rezervacije.objects.filter(korisnik = korisnik)
-    return render_to_response("Centar/korisnik.html", {'info_message' : message, 'korisnik' : korisnik, 'rezervacije' : rezervacije}, context_instance = RequestContext(request))
+    tereni = Tereni.objects.all()
+    centri = SportCentri.objects.all()
+    return render_to_response("Centar/korisnik.html", {'info_message' : message, 'korisnik' : korisnik, 'rezervacije' : rezervacije, 'tereni' : tereni, 'centri' : centri}, context_instance = RequestContext(request))
   else:
     raise Http404
     
+def teren(request, t_id):  
+  if usercheck(request, request.session.get('id')):
+    korisnik = Korisnici.objects.get(id = request.session.get('id'))
+    message = ''
+    teren_count = Tereni.objects.filter( id = int(t_id)).count()
+    if teren_count > 0:
+      terend = Tereni.objects.get( id = t_id)
+      if request.POST:
+	number = request.POST['order']
+	dan = request.POST['date']
+	if number > 7 or number < 22:
+	  pocetak = dan +' ' + number +':00'
+	  kraj = dan + ' ' + str(int(number)+1) +':00'
+	  pocetak_object = datetime.strptime(pocetak, '%b. %d, %Y %H:%M')
+	  kraj_object = datetime.strptime(kraj, '%b. %d, %Y %H:%M')
+	  rezervacije_count = Rezervacije.objects.filter(pocetak = pocetak_object).count()
+	  if rezervacije_count == 0:
+	    r = Rezervacije(teren = terend, korisnik = korisnik, pocetak = pocetak_object, kraj = kraj_object, koristeno = 0 )
+	    r.save()
+	    message = 'Termin rezervisan'
+	  else:
+	    message = "Termin zauzet"
+	else:
+	  message = 'Pogresno uneseni podaci'
+      now = timezone.now()
+      rezervacije_count = Rezervacije.objects.filter(teren = terend).count()
+      if rezervacije_count > 0:
+	rezervacije = Rezervacije.objects.filter(teren = terend)
+      dani = []
+      for i in range (0, 9):
+	dani.append(date.today() + timedelta(i+1))
+      brojevi = []
+      for i in range (8, 22):
+	brojevi.append(i)
+      return render_to_response("Centar/teren.html", { 'teren' : terend, 'rezervacije' : rezervacije, 'dani' : dani, 'brojevi' : brojevi, 'message' : message}, context_instance = RequestContext(request))
+    else:
+      raise Http404
+  else:
+    raise Http404

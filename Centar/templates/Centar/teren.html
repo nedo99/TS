@@ -1,0 +1,27 @@
+{{ teren.naziv }}, {{ teren.sport }}, {{ teren.centar.naziv }}
+<br>
+{% if message %} <strong>{{ message }} </strong>{% endif %}
+<p> Termin mozete rezervisati u narednih 10 dana. </p>
+{% for dan in dani %}
+<table border=1>
+  <tr colspan = 2><td>{{ dan}} <input type=hidden name= dan value = {{ dan }}></td> </tr>
+  {% for i in brojevi %}
+  <form action="{% url 'teren' teren.id %}" method="post">{% csrf_token %}
+    {% for rezervacija in rezervacije%}
+    
+      {% if dan == rezervacija.pocetak.date %}
+	{% if i == rezervacija.pocetak.hour %}
+	  <tr bgcolor="red"><td>{{ i }}:00 - {{ i|add:"1"}}:00</td><td>Rezervisano</td></tr>
+	  {{ ind }}
+	{% endif %}
+      {% endif %}
+    {% endfor %}
+    {% if ind %}
+    {% else %}
+      <tr bgcolor="green"><td><input type=hidden name=date value="{{ dan }}">{{ i }}:00 - {{ i|add:"1"}}:00</td><td><input type=hidden name=order value={{ i }}><input type=submit value=Rezervisi></td></tr>
+    {% endif %}
+    </form>
+  {% endfor %}
+  
+</table>
+{% endfor %}

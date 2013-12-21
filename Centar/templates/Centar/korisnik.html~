@@ -1,5 +1,6 @@
 Pozdrav {{ korisnik.ime }}
 <br>
+{% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %} <br>
 Zakazane rezervacije:
 {% if rezervacije %}
 <table border = '1'>
@@ -10,3 +11,14 @@ Zakazane rezervacije:
 {% endfor %}
 </table>
 {% endif %}
+
+<br>
+<br>
+{% for centar in centri %}
+  <br><br><h3>{{ centar.naziv }}</h3> <h4> {{ centar.adresa }} </h4> <br>
+  {% for teren in tereni %}
+    {% if teren.centar == centar %}
+      <a href= "{% url 'teren' {{teren.id}} %}">{{ teren.naziv }} {{ teren.sport }}</a><br>
+    {% endif %}
+  {% endfor %}
+{% endfor %}
