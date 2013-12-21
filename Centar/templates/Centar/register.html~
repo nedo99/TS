@@ -1,6 +1,9 @@
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 {% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %}
-<form action="{% url 'index' %}" method="post">{% csrf_token %}
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+
+<form action="{% url 'register' %}" method="post">{% csrf_token %}
 {% for field in form %}
         <div class="fieldWrapper">
             
@@ -9,7 +12,5 @@
         </div>
     {% endfor %}
 
-{% if form %} <input type="submit" value="Prijava" /> {% endif %}
+{% if form %} <input type="submit" value="Registracija" /> {% endif %}
 </form>
-
-<a href="register/">Register</a>
