@@ -157,6 +157,7 @@ def teren(request, t_id):
 	  message = 'Pogresno uneseni podaci'
       now = timezone.now()
       rezervacije_count = Rezervacije.objects.filter(teren = terend).count()
+      rezervacije = 0
       if rezervacije_count > 0:
 	rezervacije = Rezervacije.objects.filter(teren = terend)
       dani = []
