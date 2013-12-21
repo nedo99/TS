@@ -1,30 +1,22 @@
 {{ teren.naziv }}, {{ teren.sport }}, {{ teren.centar.naziv }}
 <br>
+<a href="{% url 'out' %}">Odjavi se</a>
+<a href="{% url 'user' korisnik.id %}">Nazad</a>
 {% if message %} <strong>{{ message }} </strong>{% endif %}
 <p> Termin mozete rezervisati u narednih 10 dana. </p>
-{% for dan in dani %}
+{% for i, k in da %}
 <table border=1>
-  <tr colspan = 2><td>{{ dan}} <input type=hidden name= dan value = {{ dan }}></td> </tr>
-  {% for i in brojevi %}
+<tr colspan = 2><td>{{ i }} <input type=hidden name= dan value = {{ i }}></td> </tr>
+  {% for j in k %}
   <form action="{% url 'teren' teren.id %}" method="post">{% csrf_token %}
-    {% if rezervacije %}
-    {% for rezervacija in rezervacije%}
-    
-      {% if dan == rezervacija.pocetak.date %}
-	{% if i == rezervacija.pocetak.hour %}
-	  <tr bgcolor="red"><td>{{ i }}:00 - {{ i|add:"1"}}:00</td><td>Rezervisano</td></tr>
-	  {{ ind }}
-	{% endif %}
-      {% endif %}
-    {% endfor %}
-    
-    {% endif %}
-    {% if ind %}
+    {% if j == 0 %}
+      <tr bgcolor="green"><td><input type=hidden name=date value="{{ i }}">{{ forloop.counter0|add:"8" }}:00 - {{ forloop.counter0|add:"9" }}:00</td><td><input type=hidden name=order value={{ forloop.counter0|add:"8"}}><input type=submit value=Rezervisi></td></tr>
     {% else %}
-      <tr bgcolor="green"><td><input type=hidden name=date value="{{ dan }}">{{ i }}:00 - {{ i|add:"1"}}:00</td><td><input type=hidden name=order value={{ i }}><input type=submit value=Rezervisi></td></tr>
+      <tr bgcolor="red"><td><input type=hidden name=date value="{{ i }}">{{ forloop.counter0|add:"8" }}:00 - {{ forloop.counter0|add:"9" }}:00</td><td><input type=hidden name=order value={{ forloop.counter0|add:"8"}}>Rezervisano</td></tr>
     {% endif %}
-      </form>
-  {% endfor %}
-  
-</table>
+    
+    </form>
+    {% endfor %}
+    </table>
 {% endfor %}
+

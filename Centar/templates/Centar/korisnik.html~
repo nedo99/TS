@@ -18,7 +18,7 @@ Zakazane rezervacije:
   <br><br><h3>{{ centar.naziv }}</h3> <h4> {{ centar.adresa }} </h4> <br>
   {% for teren in tereni %}
     {% if teren.centar == centar %}
-      <a href= "{% url 'teren' {{teren.id}} %}">{{ teren.naziv }} {{ teren.sport }}</a><br>
+      <a href= "{% url 'teren' teren.id %}">{{ teren.naziv }} {{ teren.sport }}</a><br>
     {% endif %}
   {% endfor %}
 {% endfor %}
