@@ -7,6 +7,7 @@
   <tr colspan = 2><td>{{ dan}} <input type=hidden name= dan value = {{ dan }}></td> </tr>
   {% for i in brojevi %}
   <form action="{% url 'teren' teren.id %}" method="post">{% csrf_token %}
+    {% if rezervacije %}
     {% for rezervacija in rezervacije%}
     
       {% if dan == rezervacija.pocetak.date %}
@@ -16,11 +17,13 @@
 	{% endif %}
       {% endif %}
     {% endfor %}
+    
+    {% endif %}
     {% if ind %}
     {% else %}
       <tr bgcolor="green"><td><input type=hidden name=date value="{{ dan }}">{{ i }}:00 - {{ i|add:"1"}}:00</td><td><input type=hidden name=order value={{ i }}><input type=submit value=Rezervisi></td></tr>
     {% endif %}
-    </form>
+      </form>
   {% endfor %}
   
 </table>
