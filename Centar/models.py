@@ -1,4 +1,5 @@
 from django.db import models
+import datetime
 
 class Privilegije(models.Model):
     tip = models.CharField(max_length = 20)

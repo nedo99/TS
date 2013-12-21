@@ -1,6 +1,5 @@
 Pozdrav {{ korisnik.ime }}
 <br>
-{% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %} <br>
 Zakazane rezervacije:
 {% if rezervacije %}
 <table border = '1'>

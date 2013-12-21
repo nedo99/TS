@@ -1,5 +1,6 @@
 from django.contrib import admin
 from Centar.models import Privilegije, Korisnici, Radnici, Tereni, SportCentri, Rezervacije
+import datetime
 
 admin.site.register(Privilegije)
 admin.site.register(Korisnici)

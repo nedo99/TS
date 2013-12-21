@@ -21,7 +21,6 @@ class Korisnici(models.Model):
 class SportCentri(models.Model):
     naziv = models.CharField(max_length=200)
     adresa = models.CharField(max_length=200)
-    choice_text = models.CharField(max_length=200)
     def __unicode__(self):  # Python 3: def __str__(self):
         return self.naziv
     
