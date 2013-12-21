@@ -1,0 +1,8 @@
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+{% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %}
+<form action="{% url 'index' %}" method="post">
+{% csrf_token %}
+<input type="text" name="username">
+<input type="password" name="pass">
+<input type="submit" value="Vote" />
+</form>
