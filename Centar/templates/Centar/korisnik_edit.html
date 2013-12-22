@@ -1,0 +1,20 @@
+ <h3>Izmjeni profil</h3>
+
+{% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %}
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+
+<form action="{% url 'kor_edit' korisnik.id %}" method="post">{% csrf_token %}
+{% for field in form %}
+        <div class="fieldWrapper">
+            
+           {{ field.label_tag }}{{ field }}
+           {{ field.errors }}
+        </div>
+    {% endfor %}
+
+{% if form %} <input type="submit" value="Izmjeni" /> {% endif %}
+</form>
+
+
+<a href="{% url 'user' korisnik.id %}">Nazad</a>

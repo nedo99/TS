@@ -1,14 +1,27 @@
 Pozdrav {{ korisnik.ime }}!<br>
 Dobro dosli na Vas profil.<br><br>
 
-<a href="{% url 'out' %}">Odjavi se</a>
-
 {% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %} <br>
 
+<script type="text/javascript">
+function showStuff(n) {
+	if (document.getElementById(n).style.visibility != 'visible')
+	  document.getElementById(n).style.visibility = 'visible';
+	else
+	  document.getElementById(n).style.visibility = 'hidden';
+}
+</script>
+<a href="#" onclick="showStuff('rezervacije');">Pregled rezervacija</a><br>
+<a href="#" onclick="showStuff('rezervisi');">Rezervisi termin</a><br>
+<a href="{% url 'kor_edit' korisnik.id %}">Izmjeni profilne informacije</a><br>
+<a href="{% url 'out' %}">Odjavi se</a><br>
+
+<table>
+<tr><td>
+<div id='rezervacije' style="visibility:hidden;">
 
 
-
-<h3>Pregled rezervacija:</h3>
+<h4>Pregled rezervacija:</h4>
 {% if rezervacije %}  
   <form action="{% url 'user' korisnik.id %}" method="post">{% csrf_token %}
     <table border = '1'>
@@ -35,16 +48,25 @@ Dobro dosli na Vas profil.<br><br>
 {% else %}
 Trenutno nemate rezervacija.
 {% endif %}
-
-<h3>Rezervisi termin</h3>
-<br>
-
+</div>
+</td>
+<td>
+<div id='rezervisi' style="visibility:hidden;">
+<h4>Lista centara</h4>
+Klikni na dvoranu u centru da bi rezervisali termin.<br>
+<ul>
 {% for centar in centri %}
-  <h4>{{ centar.naziv }} <br> {{ centar.adresa }}</h4>
+  <li><strong>{{ centar.naziv }} </storng>, {{ centar.adresa }}<br></li>
   {% for teren in tereni %}
     {% if teren.centar == centar %}
-      <a href= "{% url 'teren' teren.id %}">{{ teren.naziv }} - {{ teren.sport }}</a><br>
+           <a href= "{% url 'teren' teren.id %}">{{ teren.naziv }} - {{ teren.sport }}</a><br>
     {% endif %}
   {% endfor %}
-  <br><br>
+  <br>
+  
 {% endfor %}
+</ul>
+</div>
+</td>
+</tr>
+</table>

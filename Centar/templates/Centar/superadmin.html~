@@ -1,20 +1,24 @@
-{{ korisnik.ime }}
+Pozdrav {{ korisnik.ime }} <br>
+
+Dobro dosli na superadmin profil.<br><br>
+<script type="text/javascript">
+function showStuff(n) {
+	if (document.getElementById(n).style.visibility != 'visible')
+	  document.getElementById(n).style.visibility = 'visible';
+	else
+	  document.getElementById(n).style.visibility = 'hidden';
+}
+</script>
+<a href="#" onclick="showStuff('listacentara');">Lista centara</a><br>
+<a href="{% url 'out' %}">Odjavi se</a>
 <br>
 {% if message %} <strong> {{ message }} </strong> {% endif %}
 <br>
-{% if korisnici %}
-<table border = 1>
- {% for k in korisnici %}
- 
-  {% if korisnik.id != k.id %}
-  <form action="{% url 'superadmin' korisnik.id %}" method="post">{% csrf_token %}
-    <tr><td><input type ="hidden" name = id value ={{k.id}}>{{ k.ime }}</td><td> {{ k.prezime }} </td><td><input type=submit name = 'brisanje' value = "Izbrisi korisnika"></td></tr>
-    </form>
-    {% endif %}
- {% endfor %}
 
-</table>
-{% endif %}
+<table>
+<tr><td>
+
+
 Pretrazivanje korisnika po imenu ili prezimenu.
 <form action="{% url 'superadmin' korisnik.id %}" method="post">{% csrf_token %}
 {% for field in form %}
@@ -28,7 +32,22 @@ Pretrazivanje korisnika po imenu ili prezimenu.
 {% if form %} <input type="submit" name = 'pretraga' value="Trazi" /> {% endif %}
 </form>
 
-<br>
+{% if korisnici %}
+<table border = 1>
+ {% for k in korisnici %}
+ 
+  {% if korisnik.id != k.id %}
+  <form action="{% url 'superadmin' korisnik.id %}" method="post">{% csrf_token %}
+    <tr><td><input type ="hidden" name = id value ={{k.id}}>{{ k.ime }}</td><td> {{ k.prezime }} </td><td><input type=submit name = 'brisanje' value = "Izbrisi korisnika"></td></tr>
+    </form>
+    {% endif %}
+ {% endfor %}
+
+</table>
+
+{% endif %}
+</td>
+<td>
 Dodaj sportski centar.
 <form action="{% url 'superadmin' korisnik.id %}" method="post">{% csrf_token %}
 {% for field in formcentar %}
@@ -41,10 +60,16 @@ Dodaj sportski centar.
 
 {% if formcentar %} <input type="submit" name = 'dodajcentar' value="Dodaj centar" /> {% endif %}
 </form>
-
+</td>
+<td>
 {% if centri %}
-Lista centara. Klikni na centar za dodatne opcije
+Lista centara. Klikni na centar za dodatne opcije <br>
   {% for centar in centri %}
     <a href ="{% url 'centar' centar.id %}">{{ centar.naziv }}</a> {{ centar.adresa }} <br>
   {% endfor %}
+{% else %}
+  Trenotno nema sport centara u bazi.
 {% endif %}
+</td>
+</tr>
+</table>

@@ -43,6 +43,16 @@ class RegisterForm(forms.Form):
       adresa = forms.CharField(max_length=200)
       rodjenje = forms.DateField()
       
+class EditForm(forms.Form):
+      password = CharField(widget=PasswordInput())
+      password1 = CharField(widget=PasswordInput())
+      ime = forms.CharField(max_length=20)
+      prezime = forms.CharField(max_length=20)
+      mail = forms.EmailField()
+      telefon = forms.CharField(max_length=20)
+      adresa = forms.CharField(max_length=200)
+      rodjenje = forms.DateField()
+      
 class LoginForm(forms.Form):
      korisnicko_ime = forms.CharField(max_length=20)
      sifra = CharField(widget=PasswordInput())
@@ -95,22 +105,26 @@ def register(request):
       form = RegisterForm(request.POST) # A form bound to the POST data
       if form.is_valid():
 	  user = form.cleaned_data['username']
-	  pass1 = form.cleaned_data['password']
-	  pass2 = form.cleaned_data['password1']
-	  ime = form.cleaned_data['ime']
-	  prezime = form.cleaned_data['prezime']
-	  mail = form.cleaned_data['mail']
-	  telefon = form.cleaned_data['telefon']
-	  adresa = form.cleaned_data['adresa']
-	  rodjenje = form.cleaned_data['rodjenje']
-	  if pass1 != pass2:
-	    return render_to_response("Centar/register.html", {'error_message' : 'Sifre nisu jednake', 'form': form}, context_instance = RequestContext(request))
-	  pr = Privilegije.objects.get(tip = 'user')
-	  m = md5.new()
-	  m.update(pass1)
-	  korisnik = Korisnici(username = user, password = m.hexdigest(), ime = ime, prezime = prezime, mail = mail, telefon = telefon, adresa = adresa, datum_rodjenja = rodjenje, vrsta = pr)
-	  korisnik.save()
-	  return render_to_response("Centar/register.html", {'info_message' : 'Uspjesno ste registrovani. Sada se mozete prijaviti na sistem.'}, context_instance = RequestContext(request))
+	  kor_test = Korisnici.objects.filter(username = user).count()
+	  if kor_test == 0:
+	    pass1 = form.cleaned_data['password']
+	    pass2 = form.cleaned_data['password1']
+	    ime = form.cleaned_data['ime']
+	    prezime = form.cleaned_data['prezime']
+	    mail = form.cleaned_data['mail']
+	    telefon = form.cleaned_data['telefon']
+	    adresa = form.cleaned_data['adresa']
+	    rodjenje = form.cleaned_data['rodjenje']
+	    if pass1 != pass2:
+	      return render_to_response("Centar/register.html", {'error_message' : 'Sifre nisu jednake', 'form': form}, context_instance = RequestContext(request))
+	    pr = Privilegije.objects.get(tip = 'user')
+	    m = md5.new()
+	    m.update(pass1)
+	    korisnik = Korisnici(username = user, password = m.hexdigest(), ime = ime, prezime = prezime, mail = mail, telefon = telefon, adresa = adresa, datum_rodjenja = rodjenje, vrsta = pr)
+	    korisnik.save()
+	    return HttpResponseRedirect('/Centar/uspjeh/')
+	  else:
+	    return render_to_response("Centar/register.html", {'error_message' : 'Korinsik sa datim korisnickim imenom vec postoji u sistemu.', 'form' : form}, context_instance = RequestContext(request))
       else:
 	  return render_to_response("Centar/register.html", {'error_message' : 'Doslo je do greske prilikom registracije.', 'form': form}, context_instance = RequestContext(request))
     else :
@@ -146,6 +160,41 @@ def user(request, u_id):
     tereni = Tereni.objects.all()
     centri = SportCentri.objects.all()
     return render_to_response("Centar/korisnik.html", {'info_message' : message, 'korisnik' : korisnik, 'rezervacije' : rezervacije, 'tereni' : tereni, 'centri' : centri}, context_instance = RequestContext(request))
+  else:
+    raise Http404
+  
+def kor_edit(request, u_id):
+  if usercheck(request, u_id, 'user'):
+    message=''
+    korisnik = Korisnici.objects.get(id = u_id)
+    if request.POST:
+      form = EditForm(request.POST)
+      if form.is_valid():
+	pass1 = form.cleaned_data['password']
+	pass2 = form.cleaned_data['password1']
+	ime = form.cleaned_data['ime']
+	prezime = form.cleaned_data['prezime']
+	mail = form.cleaned_data['mail']
+	telefon = form.cleaned_data['telefon']
+	adresa = form.cleaned_data['adresa']
+	rodjenje = form.cleaned_data['rodjenje']
+	if pass1 == pass2:
+	  m = md5.new()
+	  m.update(pass1)
+	  korisnik.password = m.hexdigest()
+	  korisnik.ime = ime
+	  korisnik.prezime = prezime 
+	  korisnik.mail = mail 
+	  korisnik.telefon = telefon
+	  korisnik.adresa = adresa
+	  korisnik.datum_rodjenja = rodjenje
+	  korisnik.save()
+	  message = 'Podaci uspjesno izmjenjeni'
+	else:
+	  message='Sifre nisu jednake'
+      return render_to_response("Centar/korisnik_edit.html", {'info_message' : message, 'korisnik' : korisnik, 'form': form}, context_instance = RequestContext(request))
+    form = EditForm(initial = {'ime': korisnik.ime, 'prezime' : korisnik.prezime, 'mail' : korisnik.mail, 'telefon' : korisnik.telefon, 'adresa' : korisnik.adresa, 'rodjenje' : korisnik.datum_rodjenja})
+    return render_to_response("Centar/korisnik_edit.html", {'info_message' : message, 'korisnik' : korisnik, 'form': form}, context_instance = RequestContext(request))
   else:
     raise Http404
     
@@ -237,7 +286,10 @@ def superadmin(request, u_id):
 	if korisnici_count > 0:
 	  korisnikdel = Korisnici.objects.filter(id = brisanje_id)
 	  korisnikdel.delete()
+	  request.session['brisanje_korisnik'] = True
 	  message="Korisnik izbrisan"
+	elif request.session.get('brisanje_korisnik'):
+	  pass
 	else:
 	  message = "Doslo je do greske prilikom brisanja korisnika"
     if request.POST.get('dodajcentar'):
@@ -249,6 +301,7 @@ def superadmin(request, u_id):
 	centar.save()
 	message = "Sport centar dodan"
         formCentar = CentarRegister()
+        return HttpResponseRedirect('/Centar/superadmin/' + str(request.session.get('id')) + '/')
       return render_to_response("Centar/superadmin.html", {"korisnik" : korisnik, 'form' : form, 'message' : message, 'korisnici' : korisnici, 'formcentar' : formCentar}, context_instance = RequestContext(request))
     centri = SportCentri.objects.all()
     formCentar = CentarRegister()
@@ -292,21 +345,30 @@ def centar(request, c_id):
 	  if pass1 != pass2:
 	    message = "Sifre nisu jednake"
 	  else:
-	    ime = registerform.cleaned_data['ime']
-	    prezime = registerform.cleaned_data['prezime']
-	    mail = registerform.cleaned_data['mail']
-	    telefon = registerform.cleaned_data['telefon']
-	    adresa = registerform.cleaned_data['adresa']
-	    rodjenje = registerform.cleaned_data['rodjenje']
-	    pr = Privilegije.objects.get(tip = 'admin')
 	    m = md5.new()
 	    m.update(pass1)
-	    korisnik = Korisnici(username = user, password = m.hexdigest(), ime = ime, prezime = prezime, mail = mail, telefon = telefon, adresa = adresa, datum_rodjenja = rodjenje, vrsta = pr)
-	    korisnik.save()
-	    radnik = Radnici(radnik = korisnik, centar = centar)
-	    radnik.save()
-	    message = "Radnik dodan"
-	    registerform = RegisterForm()
+	    kor_test = Korisnici.objects.filter(username = user).count()
+	    if kor_test == 0 :
+	      ime = registerform.cleaned_data['ime']
+	      prezime = registerform.cleaned_data['prezime']
+	      mail = registerform.cleaned_data['mail']
+	      telefon = registerform.cleaned_data['telefon']
+	      adresa = registerform.cleaned_data['adresa']
+	      rodjenje = registerform.cleaned_data['rodjenje']
+	      pr = Privilegije.objects.get(tip = 'admin')
+	      korisnik = Korisnici(username = user, password = m.hexdigest(), ime = ime, prezime = prezime, mail = mail, telefon = telefon, adresa = adresa, datum_rodjenja = rodjenje, vrsta = pr)
+	      korisnik.save()
+	      radnik = Radnici(radnik = korisnik, centar = centar)
+	      radnik.save()
+	      message = "Radnik dodan"
+	      registerform = RegisterForm()
+	      request.session['user_reg'] = user
+	    else:
+	      if user == request.session.get('user_reg'):
+		del request.session['user_reg']
+		return HttpResponseRedirect('/Centar/superadmin/centar/' + c_id + '/')
+	      else:
+		message = "Korisnik sa unesenim korisnickim imenom vec postoji"
     
     request.session['centar'] = c_id
     if request.POST.get('obicnikorisnik'):
@@ -379,7 +441,8 @@ def emp_tereni(request, u_id):
 	  return HttpResponseRedirect(reverse('Centar.views.emp_tereni', args=(korisnik.id,)))  
       else:
 	  message = "Doslo je do greske prilikom brisanja terena."
-
+    formteren = TerenRegister()
+    tereni = Tereni.objects.filter(centar=centar)
     if request.POST.get('dodajteren'):
       formteren= TerenRegister(request.POST)
       if formteren.is_valid():
@@ -390,9 +453,8 @@ def emp_tereni(request, u_id):
 	message = "Teren dodan."
         formteren = TerenRegister()
         tereni = Tereni.objects.filter(centar=centar)
-      return HttpResponseRedirect(reverse('Centar.views.emp_tereni', args=(korisnik.id,)))      
-    formteren = TerenRegister()
-    tereni = Tereni.objects.filter(centar=centar)
+	return HttpResponseRedirect(reverse('Centar.views.emp_tereni', args=(korisnik.id,)))      
+      return render_to_response("Centar/emp_tereni.html", {'info_message' : message, 'korisnik' : korisnik, 'tereni' : tereni, 'centar' : centar, 'formteren' : formteren}, context_instance = RequestContext(request)) 
     return render_to_response("Centar/emp_tereni.html", {'info_message' : message, 'korisnik' : korisnik, 'tereni' : tereni, 'centar' : centar, 'formteren' : formteren}, context_instance = RequestContext(request))        
   else:
     raise Http404
@@ -436,3 +498,6 @@ def emp_termini(request, u_id):
     return render_to_response("Centar/emp_termini.html", {'info_message' : message, 'korisnik' : korisnik}, context_instance = RequestContext(request))
   else:
     raise Http404
+  
+def uspjeh(request):
+  return render_to_response("Centar/uspjesno.html")
