@@ -1,1 +1,29 @@
+{{ korisnik.ime }}
+<br>
+{% if message %} <strong> {{ message }} </strong> {% endif %}
+<br>
+{% if korisnici %}
+<table border = 1>
+ {% for k in korisnici %}
  
+  {% if korisnik.id != k.id %}
+  <form action="{% url 'superadmin' korisnik.id %}" method="post">{% csrf_token %}
+    <tr><td><input type ="hidden" name = id value ={{k.id}}>{{ k.ime }}</td><td> {{ k.prezime }} </td><td><input type=submit name = 'brisanje' value = "Izbrisi korisnika"></td></tr>
+    </form>
+    {% endif %}
+ {% endfor %}
+
+</table>
+{% endif %}
+Pretrazivanje korisnika po imenu ili prezimenu.
+<form action="{% url 'superadmin' korisnik.id %}" method="post">{% csrf_token %}
+{% for field in form %}
+        <div class="fieldWrapper">
+            
+           {{ field.label_tag }}{{ field }}
+           {{ field.errors }}
+        </div>
+    {% endfor %}
+
+{% if form %} <input type="submit" name = 'pretraga' value="Trazi" /> {% endif %}
+</form>

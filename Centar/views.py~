@@ -12,10 +12,10 @@ from django.utils.timezone import utc
 from django.utils import timezone
 from itertools import izip
 
-def usercheck(request, u_id):
+def usercheck(request, u_id, vrsta):
   if request.session.get('log', False):
     if request.session.get('id') == int(u_id):
-      if request.session.get('vrsta') == 'user':
+      if request.session.get('vrsta') == vrsta:
 	m1 = md5.new()
 	m1.update(str(u_id) + request.session.get('vrsta'))
 	if request.session.get('tag') == m1.hexdigest():
@@ -43,6 +43,13 @@ class RegisterForm(forms.Form):
 class LoginForm(forms.Form):
      korisnicko_ime = forms.CharField(max_length=20)
      sifra = CharField(widget=PasswordInput())
+     
+class UserSearch(forms.Form):
+     word = forms.CharField(max_length = 30)
+     
+class CentarRegister(forms.Form):
+     naziv = forms.CharField(max_length = 50)
+     adresa = forms.CharField(max_length = 200)
 
 def index(request):
     if request.POST:
@@ -63,12 +70,13 @@ def index(request):
 	  m1 = md5.new()
 	  m1.update(str(korisnik.id) + korisnik.vrsta.tip)
 	  request.session['tag'] = m1.hexdigest()
+	  request.session.set_expiry(0)
 	  if korisnik.vrsta.tip == 'user':
 	    return HttpResponseRedirect("user/" + str (korisnik.id))
 	  if korisnik.vrsta.tip == 'admin':
 	    return render_to_response("Centar/admin.html", {"Korisnici" : korisnik})
 	  if korisnik.vrsta.tip == 'superadmin':
-	    return render_to_response("Centar/superadmin.html", {"Korisnici" : korisnik})
+	    return HttpResponseRedirect("superadmin/" + str(korisnik.id))
       else:
 	return render_to_response("Centar/index.html", {'error_message' : 'Doslo je do greske prilikom prijave.', 'form': form}, context_instance = RequestContext(request))
     else:
@@ -103,7 +111,7 @@ def register(request):
 	  return render_to_response("Centar/register.html", {'form' : form, 'info_message' : 'Unesite vase informacije.'}, context_instance = RequestContext(request))
 	  
 def user(request, u_id):
-  if usercheck(request, u_id):
+  if usercheck(request, u_id, 'user'):
     message = ''
     if request.POST:
       rez_id = request.POST['id']
@@ -133,7 +141,7 @@ def user(request, u_id):
     raise Http404
     
 def teren(request, t_id):  
-  if usercheck(request, request.session.get('id')):
+  if usercheck(request, request.session.get('id'), 'user'):
     korisnik = Korisnici.objects.get(id = request.session.get('id'))
     message = ''
     teren_count = Tereni.objects.filter( id = int(t_id)).count()
@@ -187,12 +195,52 @@ def teren(request, t_id):
 	ttable.append(be)
       print ttable
       da = izip(dani, ttable)
-      return render_to_response("Centar/teren.html", { 'teren' : terend, 'rezervacije' : rezervacije, 'dani' : dani, 'brojevi' : brojevi, 'brojevi1' : brojevi1, 'message' : message, 'table' : ttable, 'da' : da}, context_instance = RequestContext(request))
+      return render_to_response("Centar/teren.html", { 'korisnik' : korisnik, 'teren' : terend, 'rezervacije' : rezervacije, 'dani' : dani, 'brojevi' : brojevi, 'brojevi1' : brojevi1, 'message' : message, 'table' : ttable, 'da' : da}, context_instance = RequestContext(request))
     else:
       raise Http404
   else:
     raise Http404
   
 def out(request):
-  request.session.clear()
+  request.session.flush()
   return HttpResponseRedirect('/Centar/')
+  
+def superadmin(request, u_id):
+  if usercheck(request, u_id, 'superadmin'):
+    korisnik = Korisnici.objects.get ( id = u_id)
+    message = ''
+    korisnici = 0
+    form = UserSearch()
+    if request.POST.get('pretraga'):
+      form = UserSearch(request.POST)
+      if form.is_valid():
+	word = form.cleaned_data['word']
+	korisnici_count = Korisnici.objects.filter(ime__icontains = word).count()
+	if korisnici_count > 0:
+	  korisnici = Korisnici.objects.filter(ime__icontains = word)
+	else:
+	  message = "Nisu pronadjeni rezultati."
+    if request.POST.get('brisanje'):
+      brisanje_id = request.POST['id']
+      if brisanje_id != u_id:
+	korisnici_count = Korisnici.objects.filter(id = brisanje_id).count()
+	if korisnici_count > 0:
+	  korisnikdel = Korisnici.objects.filter(id = brisanje_id)
+	  korisnikdel.delete()
+	  message="Korisnik izbrisan"
+	else:
+	  message = "Doslo je do greske prilikom brisanja korisnika"
+    if request.POST.get('dodajcentar'):
+      formCentar = CentarRegister(request.POST)
+      if formCentar.is_valid():
+	naziv = formCentar.cleaned_data['naziv']
+	adresa = formCentar.cleaned_data['adresa']
+	centar = SportCentri( naziv = naziv, adresa = adresa)
+	centar.save()
+	message = "SPort centar dodan"
+      formCentar = CentarRegister()
+      return render_to_response("Centar/superadmin.html", {"korisnik" : korisnik, 'form' : form, 'message' : message, 'korisnici' : korisnici, 'formcentar' : formCentar}, context_instance = RequestContext(request))
+    formCentar = CentarRegister()
+    return render_to_response("Centar/superadmin.html", {"korisnik" : korisnik, 'form' : form, 'message' : message, 'korisnici' : korisnici, 'formcentar' : formCentar}, context_instance = RequestContext(request))
+  else:
+    raise Http404
