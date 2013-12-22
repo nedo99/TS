@@ -27,3 +27,24 @@ Pretrazivanje korisnika po imenu ili prezimenu.
 
 {% if form %} <input type="submit" name = 'pretraga' value="Trazi" /> {% endif %}
 </form>
+
+<br>
+Dodaj sportski centar.
+<form action="{% url 'superadmin' korisnik.id %}" method="post">{% csrf_token %}
+{% for field in formcentar %}
+        <div class="fieldWrapper">
+            
+           {{ field.label_tag }}{{ field }}
+           {{ field.errors }}
+        </div>
+    {% endfor %}
+
+{% if formcentar %} <input type="submit" name = 'dodajcentar' value="Dodaj centar" /> {% endif %}
+</form>
+
+{% if centri %}
+Lista centara. Klikni na centar za dodatne opcije
+  {% for centar in centri %}
+    <a href ="{% url 'centar' centar.id %}">{{ centar.naziv }}</a> {{ centar.adresa }} <br>
+  {% endfor %}
+{% endif %}

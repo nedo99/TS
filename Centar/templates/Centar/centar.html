@@ -1,0 +1,67 @@
+Pozdrav {{ korisnik.ime }}
+<br>
+{% if message %} <strong> {{ message }} </strong> {% endif %}<br>
+<h4>{{ centar.naziv }} </h4> <strong> {{ centar.adresa }} </strong><br>
+
+<script type="text/javascript">
+function showStuff(n) {
+	if (document.getElementById(n).style.visibility != 'visible')
+	  document.getElementById(n).style.visibility = 'visible';
+	else
+	  document.getElementById(n).style.visibility = 'hidden';
+}
+</script>
+<a href="#" onclick="showStuff('centaredit');">Promjeni informacije o centru</a><br>
+<a href="#" onclick="showStuff('radnikedit');">Lista radnika</a><br>
+<a href="#" onclick="showStuff('radnikdod');">Dodaj radnika za ovaj centar</a><br>
+<a href="{% url 'superadmin' korisnik.id %}">Nazad</a><br>
+<a href="{% url 'out' %}">Odjavi se</a><br>
+<div id='centaredit' style="visibility:hidden;">
+<form action="{% url 'centar' centar.id %}" method="post">{% csrf_token %}
+{% for field in formcentar %}
+        <div class="fieldWrapper">
+            
+           {{ field.label_tag }}{{ field }}
+           {{ field.errors }}
+        </div>
+    {% endfor %}
+
+{% if formcentar %} <input type="submit" name=izmjeni value="Izmjeni" /><br>
+		    <input type=submit name="brisi" value="Brisi centar">{% endif %}
+</form>
+</div>
+<br>
+
+<div id='radnikdod' style="visibility:hidden;">
+
+<form action="{% url 'centar' centar.id %}" method="post">{% csrf_token %}
+{% for field in registerform %}
+        <div class="fieldWrapper">
+            
+           {{ field.label_tag }}{{ field }}
+           {{ field.errors }}
+        </div>
+    {% endfor %}
+
+{% if registerform %} <input type="submit" name="dodajradnika" value="Dodaj" /><br>
+		    {% endif %}
+</form>
+</div>
+
+
+{% if radnici %}
+
+<div id='radnikedit' style="visibility:hidden;">
+   <br>
+  
+  <table border =1>
+{% for radnik in radnici %}
+<form action="{% url 'centar' centar.id %}" method="post">{% csrf_token %}
+  <tr><td><input type=hidden name=id value={{ radnik.id }}> {{ radnik.ime }} {{ radnik.prezime }}</td><td><input type=submit name="obicnikorisnik" value="Prebaci u korisnike"><input type=submit name="izbrisiradnika" value="Brisi radnika"></td></tr> 
+  </form>
+{% endfor %}
+ </table>
+
+</form>
+</div>
+{% endif %}

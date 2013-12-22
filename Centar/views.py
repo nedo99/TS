@@ -244,9 +244,92 @@ def superadmin(request, u_id):
 	message = "Sport centar dodan"
         formCentar = CentarRegister()
       return render_to_response("Centar/superadmin.html", {"korisnik" : korisnik, 'form' : form, 'message' : message, 'korisnici' : korisnici, 'formcentar' : formCentar}, context_instance = RequestContext(request))
-      
+    centri = SportCentri.objects.all()
     formCentar = CentarRegister()
-    return render_to_response("Centar/superadmin.html", {"korisnik" : korisnik, 'form' : form, 'message' : message, 'korisnici' : korisnici, 'formcentar' : formCentar}, context_instance = RequestContext(request))
+    return render_to_response("Centar/superadmin.html", {"korisnik" : korisnik, 'form' : form, 'message' : message, 'korisnici' : korisnici, 'formcentar' : formCentar, 'centri' : centri}, context_instance = RequestContext(request))
+  else:
+    raise Http404
+  
+def centar(request, c_id):
+  message = ""
+  if usercheck(request, request.session.get('id'), 'superadmin'):
+    registerform = RegisterForm()
+    if request.POST.get('izmjeni'):
+      if request.session.get('centar') == c_id:
+	form =CentarRegister(request.POST)
+	if form.is_valid():
+	  naziv = form.cleaned_data['naziv']
+	  adresa = form.cleaned_data['adresa']
+	  centar = SportCentri.objects.get(id = c_id)
+	  centar.naziv = naziv
+	  centar.adresa = adresa
+	  centar.save()
+	  message = "Centar izmjenjen"
+    if request.POST.get('brisi'):
+      if request.session.get('centar') == c_id:
+	centar = SportCentri.objects.get(id = c_id)
+	centar.delete()
+	return HttpResponseRedirect('/Centar/superadmin/' + str(request.session.get('id')) + '/')
+    centar_count = SportCentri.objects.filter(id = c_id).count()
+    centar = 0
+    if centar_count > 0:
+      centar = SportCentri.objects.get(id = c_id)
+    else:
+      raise Http404
+    if request.POST.get('dodajradnika'):
+      if request.session.get('centar') == c_id:
+	registerform =RegisterForm(request.POST)
+	if registerform.is_valid():
+	  user = registerform.cleaned_data['username']
+	  pass1 = registerform.cleaned_data['password']
+	  pass2 = registerform.cleaned_data['password1']
+	  if pass1 != pass2:
+	    message = "Sifre nisu jednake"
+	  else:
+	    ime = registerform.cleaned_data['ime']
+	    prezime = registerform.cleaned_data['prezime']
+	    mail = registerform.cleaned_data['mail']
+	    telefon = registerform.cleaned_data['telefon']
+	    adresa = registerform.cleaned_data['adresa']
+	    rodjenje = registerform.cleaned_data['rodjenje']
+	    pr = Privilegije.objects.get(tip = 'admin')
+	    m = md5.new()
+	    m.update(pass1)
+	    korisnik = Korisnici(username = user, password = m.hexdigest(), ime = ime, prezime = prezime, mail = mail, telefon = telefon, adresa = adresa, datum_rodjenja = rodjenje, vrsta = pr)
+	    korisnik.save()
+	    radnik = Radnici(radnik = korisnik, centar = centar)
+	    radnik.save()
+	    message = "Radnik dodan"
+	    registerform = RegisterForm()
+    
+    request.session['centar'] = c_id
+    if request.POST.get('obicnikorisnik'):
+      u_id = request.POST.get('id')
+      kor = Korisnici.objects.get(id = u_id)
+      radnici_count = Radnici.objects.filter(radnik = kor).count()
+      if radnici_count > 0:
+	pr = Privilegije.objects.get(tip = 'user')
+	kor.vrsta = pr
+	kor.save()
+	rad = Radnici.objects.get( radnik = kor)
+	rad.delete()
+	message = "Korisnik prebacen u obicne korisnike"
+    if request.POST.get('izbrisiradnika'):
+      u_id = request.POST.get('id')
+      kor = Korisnici.objects.get(id = u_id)
+      radnici_count = Radnici.objects.filter(radnik = kor).count()
+      if radnici_count > 0:
+	kor.delete()
+	message = "Radnik izbrisan"
+    radnici_count = Radnici.objects.filter(centar = centar).count()
+    radnici_kor = []
+    if radnici_count > 0:
+      radnici = Radnici.objects.filter(centar = centar)
+      for radnik in radnici:
+	radnici_kor.append(radnik.radnik)
+    korisnik = Korisnici.objects.get (id = request.session.get('id'))    
+    formcentar = CentarRegister(initial={'naziv': centar.naziv, 'adresa' : centar.adresa})
+    return render_to_response("Centar/centar.html", {"korisnik" : korisnik, 'message' : message, 'centar' : centar, 'formcentar' : formcentar, 'registerform' : registerform, 'radnici' : radnici_kor}, context_instance = RequestContext(request))
   else:
     raise Http404
   

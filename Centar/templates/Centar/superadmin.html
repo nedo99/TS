@@ -41,3 +41,10 @@ Dodaj sportski centar.
 
 {% if formcentar %} <input type="submit" name = 'dodajcentar' value="Dodaj centar" /> {% endif %}
 </form>
+
+{% if centri %}
+Lista centara. Klikni na centar za dodatne opcije <br>
+  {% for centar in centri %}
+    <a href ="{% url 'centar' centar.id %}">{{ centar.naziv }}</a> {{ centar.adresa }} <br>
+  {% endfor %}
+{% endif %}
