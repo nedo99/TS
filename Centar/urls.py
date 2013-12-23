@@ -9,4 +9,8 @@ urlpatterns = patterns('',
     url(r'^teren/(?P<t_id>\d+)/$', views.teren, name='teren'),
     url(r'^out/$', views.out, name='out'),
     url(r'^superadmin/(?P<u_id>\d+)/$', views.superadmin, name='superadmin'),
+    url(r'^employee/(?P<u_id>\d+)/$', views.employee, name='employee'),
+    url(r'^employee/(?P<u_id>\d+)/termini/$', views.emp_termini, name='emp_termini'),
+    url(r'^employee/(?P<u_id>\d+)/korisnici/$', views.emp_korisnici, name='emp_korisnici'),
+    url(r'^employee/(?P<u_id>\d+)/tereni/$', views.emp_tereni, name='emp_tereni'),
 )

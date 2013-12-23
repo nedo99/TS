@@ -1,1 +1,14 @@
- 
+Pozdrav {{ korisnik.ime }}!
+
+<br><a href="{% url 'out' %}">Odjavi se</a>
+{% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %} <br>
+
+
+<p><strong>Meni:</strong></p>
+
+    <ul>
+        <li><a href="/employee/termini/">Upravljanje terminima</a></li>
+        <li><a href="/employee/korisnici/">Upravljanje korisnicima</a></li>
+        <li><a href="/employee/tereni/">Upravljanje terenima</a></li>
+    </ul>
+

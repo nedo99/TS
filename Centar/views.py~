@@ -2,7 +2,7 @@ from django.shortcuts import render, render_to_response
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
 import md5
-from Centar.models import Privilegije, Korisnici, Rezervacije, Tereni, SportCentri
+from Centar.models import Privilegije, Korisnici, Rezervacije, Tereni, SportCentri, Radnici
 from django import forms
 from django.forms import CharField, Form, PasswordInput
 from django.http import Http404
@@ -51,6 +51,11 @@ class CentarRegister(forms.Form):
      naziv = forms.CharField(max_length = 50)
      adresa = forms.CharField(max_length = 200)
 
+class TerenRegister(forms.Form):
+     centar = forms.ModelChoiceField(SportCentri.objects.all())
+     naziv = forms.CharField(max_length=200)
+     sport = forms.CharField(max_length=20)
+
 def index(request):
     if request.POST:
       form = LoginForm(request.POST)
@@ -74,7 +79,7 @@ def index(request):
 	  if korisnik.vrsta.tip == 'user':
 	    return HttpResponseRedirect("user/" + str (korisnik.id))
 	  if korisnik.vrsta.tip == 'admin':
-	    return render_to_response("Centar/admin.html", {"Korisnici" : korisnik})
+	    return HttpResponseRedirect("employee/" + str(korisnik.id))
 	  if korisnik.vrsta.tip == 'superadmin':
 	    return HttpResponseRedirect("superadmin/" + str(korisnik.id))
       else:
@@ -237,10 +242,90 @@ def superadmin(request, u_id):
 	adresa = formCentar.cleaned_data['adresa']
 	centar = SportCentri( naziv = naziv, adresa = adresa)
 	centar.save()
-	message = "SPort centar dodan"
-      formCentar = CentarRegister()
+	message = "Sport centar dodan"
+        formCentar = CentarRegister()
       return render_to_response("Centar/superadmin.html", {"korisnik" : korisnik, 'form' : form, 'message' : message, 'korisnici' : korisnici, 'formcentar' : formCentar}, context_instance = RequestContext(request))
+      
     formCentar = CentarRegister()
     return render_to_response("Centar/superadmin.html", {"korisnik" : korisnik, 'form' : form, 'message' : message, 'korisnici' : korisnici, 'formcentar' : formCentar}, context_instance = RequestContext(request))
+  else:
+    raise Http404
+  
+def employee(request, u_id):
+  if usercheck(request, u_id, 'admin'):    
+    korisnik = Korisnici.objects.get ( id = u_id)
+    message = "" 
+    
+    radnik = Radnici.objects.get(radnik = korisnik)
+    centar = radnik.centar
+    
+    return render_to_response("Centar/employee.html", {"korisnik" : korisnik, 'centar' : centar, 'message' : message}, context_instance = RequestContext(request))
+  else:
+    raise Http404
+  
+def emp_tereni(request, u_id):
+  if usercheck(request, u_id, 'admin'):
+    message = ''
+    
+    korisnik = Korisnici.objects.get(id = u_id)
+    radnik = Radnici.objects.get(radnik = korisnik)
+    centar = radnik.centar
+        
+    tereni_count = Tereni.objects.filter(centar=centar).count()
+
+    if tereni_count > 0:
+      tereni = Tereni.objects.filter(centar=centar)
+    else:
+      tereni=0
+      message="Trenutno nema registrovanih terena u sport centru."
+	
+    if request.POST.get('brisanje'):
+      brisanje_id = request.POST['id']
+      if tereni_count > 0:
+	  terendel = Tereni.objects.filter(id = brisanje_id)
+	  terendel.delete()
+	  message="Teren izbrisan!"
+      else:
+	  message = "Doslo je do greske prilikom brisanja terena."
+
+    if request.POST.get('dodajteren'):
+      formteren= TerenRegister(request.POST)
+      if formteren.is_valid():	
+	centar = formteren.cleaned_data['centar']	
+	naziv = formteren.cleaned_data['naziv']
+	sport = formteren.cleaned_data['sport']
+	teren = Tereni(centar=centar, naziv=naziv, sport=sport)
+	teren.save()
+	message = "Teren dodan."
+        formteren = TerenRegister()
+      return render_to_response("Centar/emp_tereni.html", {'info_message' : message, 'korisnik' : korisnik, 'tereni' : tereni, 'centar' : centar, 'formteren' : formteren}, context_instance = RequestContext(request))
+      
+    formteren = TerenRegister()
+	
+    return render_to_response("Centar/emp_tereni.html", {'info_message' : message, 'korisnik' : korisnik, 'tereni' : tereni, 'centar' : centar, 'formteren' : formteren}, context_instance = RequestContext(request))
+        
+  else:
+    raise Http404
+  
+def emp_korisnici(request, u_id):
+  if usercheck(request, u_id, 'admin'):
+    message = ''
+    
+    korisnik = Korisnici.objects.get(id = u_id)
+    kid = korisnik.id
+    
+    
+    return render_to_response("Centar/emp_korisnici.html", {'info_message' : message, 'korisnik' : korisnik}, context_instance = RequestContext(request))
+  else:
+    raise Http404
+  
+def emp_termini(request, u_id):
+  if usercheck(request, u_id, 'admin'):
+    message = ''
+    
+    korisnik = Korisnici.objects.get(id = u_id)
+    kid = korisnik.id
+    
+    return render_to_response("Centar/emp_termini.html", {'info_message' : message, 'korisnik' : korisnik}, context_instance = RequestContext(request))
   else:
     raise Http404

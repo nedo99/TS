@@ -1,0 +1,44 @@
+Admin panel sportskog centra {{ centar.naziv }}<br><br>
+
+<a href="{% url 'out' %}">Odjavi se</a>
+<a href="{% url 'employee' korisnik.id %}">Nazad</a>
+
+{% if info_message %}<p><strong>{{ info_message}}</strong></p>{% endif %} <br>
+
+{% if tereni %}
+<p><strong>Pregled terena:</strong></p>
+
+<table border = 1>
+  <tr>
+    <td>Naziv</td>
+    <td>Sport</td>
+    <td>Akcija</td>
+  </tr>
+ {% for t in tereni %}
+ 
+    <form action="{% url 'emp_tereni' korisnik.id %}" method="post">
+    {% csrf_token %}
+      <tr>
+	<td><input type ="hidden" name = id value ={{t.id}}>{{ t.naziv }}</td>
+	<td>{{ t.sport }}</td>
+	<td><input type=submit name = 'brisanje' value = "Izbrisi teren"></td>
+      </tr>
+    </form>
+    
+ {% endfor %}
+{% endif%}
+<br><br>
+
+<p><strong>Dodavanje terena:</strong></p>
+
+<form action="{% url 'emp_tereni' korisnik.id %}" method="post">{% csrf_token %}
+{% for field in formteren %}
+        <div class="fieldWrapper">
+            
+           {{ field.label_tag }}{{ field }}
+           {{ field.errors }}
+        </div>
+    {% endfor %}
+
+{% if formteren %} <input type="submit" name = 'dodajteren' value="Dodaj teren" /> {% endif %}
+</form>

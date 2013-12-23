@@ -1,0 +1,14 @@
+Pozdrav {{ korisnik.ime }}!<br>
+Dobro dosli u admin panel sportskog centra {{ centar.naziv }}.
+<br>
+<br><a href="{% url 'out' %}">Odjavi se</a>
+{% if message %}<p><strong>{{ message }}</strong></p>{% endif %} <br>
+
+
+<p><strong>Meni:</strong></p>
+    <ul>
+        <li><a href="{% url 'emp_termini' korisnik.id %}">Upravljanje terminima</a></li>
+        <li><a href="{% url 'emp_korisnici' korisnik.id %}">Upravljanje korisnicima</a></li>
+        <li><a href="{% url 'emp_tereni' korisnik.id %}">Upravljanje terenima</a></li>
+    </ul>
+
