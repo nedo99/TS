@@ -1,4 +1,6 @@
-Admin panel sportskog centra {{ centar.naziv }}<br><br>
+
+Admin panel sportskog centra {{ centar.naziv }}<br>
+Administrator {{korisnik.ime}} {{korisnik.prezime}}<br><br>
 
 <a href="{% url 'out' %}">Odjavi se</a>
 <a href="{% url 'employee' korisnik.id %}">Nazad</a>
@@ -6,9 +8,9 @@ Admin panel sportskog centra {{ centar.naziv }}<br><br>
 {% if info_message %}<p><strong>{{ info_message}}</strong></p>{% endif %} <br>
 
 
-<p><strong>Dodavanje terena:</strong></p>
+<h3>Dodavanje terena:</h3>
 
-<form action="{% url 'emp_tereni' korisnik.id %}" method="post">{% csrf_token %}
+<form action="{% url 'emp_tereni' korisnik.id %}" method="post" autocomplete="off">{% csrf_token %}
 {% for field in formteren %}
         <div class="fieldWrapper">
             
@@ -17,13 +19,15 @@ Admin panel sportskog centra {{ centar.naziv }}<br><br>
         </div>
     {% endfor %}
 
-{% if formteren %} <input type="submit" name = 'dodajteren' value="Dodaj teren" /> {% endif %}
+{% if formteren %} <input type="submit" name = 'dodajteren' value="Dodaj teren"/> {% endif %}
 </form>
 
 <br><br>
 
+<form action="{% url 'emp_tereni' korisnik.id %}" method="post">{% csrf_token %}
 {% if tereni %}
-<p><strong>Pregled terena:</strong></p>
+
+<h3>Pregled terena:</h3>
 
 <table border = 1>
   <tr>
@@ -31,16 +35,13 @@ Admin panel sportskog centra {{ centar.naziv }}<br><br>
     <td>Sport</td>
     <td>Akcija</td>
   </tr>
- {% for t in tereni %}
- 
-    <form action="{% url 'emp_tereni' korisnik.id %}" method="post">
-    {% csrf_token %}
+ {% for t in tereni %}    
       <tr>
 	<td><input type ="hidden" name = id value ={{t.id}}>{{ t.naziv }}</td>
 	<td>{{ t.sport }}</td>
 	<td><input type=submit name = 'brisanje' value = "Izbrisi teren"></td>
       </tr>
-    </form>
     
  {% endfor %}
 {% endif%}
+</form>

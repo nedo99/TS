@@ -3,12 +3,13 @@
 <form action="{% url 'index' %}" method="post">{% csrf_token %}
 {% for field in form %}
         <div class="fieldWrapper">
-            {{ field.errors }}
+            
            {{ field.label_tag }}{{ field }}
+           {{ field.errors }}
         </div>
     {% endfor %}
 
 {% if form %} <input type="submit" value="Prijava" /> {% endif %}
 </form>
 
-<a href="register/">Register</a>
+Ako jos uvijek nise, <a href="register/">registrujte se</a> na nas sistem.

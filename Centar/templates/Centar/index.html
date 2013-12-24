@@ -1,5 +1,8 @@
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
 {% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %}
+
+
 <form action="{% url 'index' %}" method="post">{% csrf_token %}
 {% for field in form %}
         <div class="fieldWrapper">
@@ -11,5 +14,5 @@
 
 {% if form %} <input type="submit" value="Prijava" /> {% endif %}
 </form>
-
-<a href="register/">Register</a>
+<br>
+Ako jos uvijek nise, <a href="register/">registrujte se</a> na nas sistem.

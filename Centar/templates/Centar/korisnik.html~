@@ -1,24 +1,48 @@
-Pozdrav {{ korisnik.ime }}
-<br>
+Pozdrav {{ korisnik.ime }}!<br>
+Dobro dosli na Vas profil.<br><br>
+
+<a href="{% url 'out' %}">Odjavi se</a>
+
 {% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %} <br>
-Zakazane rezervacije:
-{% if rezervacije %}
-<table border = '1'>
-{% for rezervacija in rezervacije %}
-<form action="{% url 'user' korisnik.id %}" method="post">{% csrf_token %}
-  <tr><td> <input type ="hidden" name= "id" value = {{rezervacija.id}} >{{ rezervacija.pocetak }} </td><td> {{rezervacija.kraj}} </td><td> {{ rezervacija.teren }} </td> <td> {{rezervacija.teren.centar.naziv}} </td> <td> <input type="submit" value="Odjavi"> </td> </tr>
+
+
+
+
+<h3>Pregled rezervacija:</h3>
+{% if rezervacije %}  
+  <form action="{% url 'user' korisnik.id %}" method="post">{% csrf_token %}
+    <table border = '1'>
+      <tr>
+	  <td>Pocetak termina </td>
+	  <td>Kraj termina</td> 
+	  <td>Sportski centar</td>
+	  <td>Akcija</td> 
+      </tr>
+
+      {% for rezervacija in rezervacije %}
+	<tr>
+	  <td> <input type ="hidden" name= "id" value = {{rezervacija.id}} >{{ rezervacija.pocetak }} </td>
+	  <td>{{rezervacija.kraj}}</td><td>{{ rezervacija.teren }}</td> 
+	  <td>{{rezervacija.teren.centar.naziv}}</td>
+	  <td><input type="submit" value="Odjavi"></td> 
+	</tr>
+
+      {% endfor %}
+    </table>
   </form>
-{% endfor %}
-</table>
+{% else %}
+Trenutno nemate rezervacija.
 {% endif %}
 
+<h3>Rezervisi termin</h3>
 <br>
-<br>
+
 {% for centar in centri %}
-  <br><br><h3>{{ centar.naziv }}</h3> <h4> {{ centar.adresa }} </h4> <br>
+  <h4>{{ centar.naziv }} <br> {{ centar.adresa }}</h4>
   {% for teren in tereni %}
     {% if teren.centar == centar %}
-      <a href= "{% url 'teren' teren.id %}">{{ teren.naziv }} {{ teren.sport }}</a><br>
+      <a href= "{% url 'teren' teren.id %}">{{ teren.naziv }} - {{ teren.sport }}</a><br>
     {% endif %}
   {% endfor %}
+  <br><br>
 {% endfor %}

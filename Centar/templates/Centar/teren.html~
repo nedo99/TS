@@ -1,12 +1,18 @@
-{{ teren.naziv }}, {{ teren.sport }}, {{ teren.centar.naziv }}
-<br>
+<h3>Teren: {{ teren.naziv }} <br> Sport: {{ teren.sport }} <br> Sportski centar: {{ teren.centar.naziv }}</h3>
+
 <a href="{% url 'out' %}">Odjavi se</a>
-<a href="{% url 'user' korisnik.id %}">Odjavi se</a>
+<a href="{% url 'user' korisnik.id %}">Nazad</a><br>
+
 {% if message %} <strong>{{ message }} </strong>{% endif %}
-<p> Termin mozete rezervisati u narednih 10 dana. </p>
+
+<h4> Pregled termina za narednih 10 dana: </h4>
+
 {% for i, k in da %}
 <table border=1>
-<tr colspan = 2><td>{{ i }} <input type=hidden name= dan value = {{ i }}></td> </tr>
+<tr colspan = 2>
+    <td>{{ i }} <input type=hidden name= dan value = {{ i }}></td> 
+    <td>Akcija</td>
+</tr>
   {% for j in k %}
   <form action="{% url 'teren' teren.id %}" method="post">{% csrf_token %}
     {% if j == 0 %}

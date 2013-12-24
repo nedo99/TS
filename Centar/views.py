@@ -11,6 +11,9 @@ from datetime import date, timedelta
 from django.utils.timezone import utc
 from django.utils import timezone
 from itertools import izip
+from django.core.urlresolvers import reverse
+from django.db.models import Q
+
 
 def usercheck(request, u_id, vrsta):
   if request.session.get('log', False):
@@ -45,7 +48,7 @@ class LoginForm(forms.Form):
      sifra = CharField(widget=PasswordInput())
      
 class UserSearch(forms.Form):
-     word = forms.CharField(max_length = 30)
+     pojam = forms.CharField(max_length = 30)
      
 class CentarRegister(forms.Form):
      naziv = forms.CharField(max_length = 50)
@@ -107,7 +110,7 @@ def register(request):
 	  m.update(pass1)
 	  korisnik = Korisnici(username = user, password = m.hexdigest(), ime = ime, prezime = prezime, mail = mail, telefon = telefon, adresa = adresa, datum_rodjenja = rodjenje, vrsta = pr)
 	  korisnik.save()
-	  return render_to_response("Centar/register.html", {'info_message' : 'Uspjesno ste registrovani. Sada se mozete prijaviti.'}, context_instance = RequestContext(request))
+	  return render_to_response("Centar/register.html", {'info_message' : 'Uspjesno ste registrovani. Sada se mozete prijaviti na sistem.'}, context_instance = RequestContext(request))
       else:
 	  return render_to_response("Centar/register.html", {'error_message' : 'Doslo je do greske prilikom registracije.', 'form': form}, context_instance = RequestContext(request))
     else :
@@ -116,6 +119,7 @@ def register(request):
 	  
 def user(request, u_id):
   if usercheck(request, u_id, 'user'):
+    korisnik=Korisnici.objects.get(id=u_id)
     message = ''
     if request.POST:
       rez_id = request.POST['id']
@@ -126,12 +130,13 @@ def user(request, u_id):
 	razlika = poc - now
 	razlika = razlika.total_seconds()//3600
 	if int(razlika) < 24:
-	  message = "Ne mozete otkazati termin 24h prije."
+	  message = "Ne mozete otkazati termin 24h prije samog termina."
 	else:
 	  rezervacija_del.delete()
 	  message = "Termin je odjavljen."
+	  return HttpResponseRedirect(reverse('Centar.views.user', args=(korisnik.id,))) 
       else:
-	message = "Ne mozete odjaviti termin koji je prosao."
+	message = "Ne mozete odjaviti termin koji je vec prosao."
     korisnik = Korisnici.objects.get(id = u_id)
     kid = korisnik.id
     rezervacije_count = Rezervacije.objects.filter(korisnik = korisnik).count()
@@ -164,6 +169,7 @@ def teren(request, t_id):
 	    r = Rezervacije(teren = terend, korisnik = korisnik, pocetak = pocetak_object, kraj = kraj_object, koristeno = 0 )
 	    r.save()
 	    message = 'Termin rezervisan'
+	    return HttpResponseRedirect(reverse('Centar.views.teren', args=(terend.id,))) 
 	  else:
 	    message = "Termin zauzet"
 	else:
@@ -218,12 +224,12 @@ def superadmin(request, u_id):
     if request.POST.get('pretraga'):
       form = UserSearch(request.POST)
       if form.is_valid():
-	word = form.cleaned_data['word']
-	korisnici_count = Korisnici.objects.filter(ime__icontains = word).count()
+	pojam = form.cleaned_data['pojam']
+	korisnici_count = Korisnici.objects.filter(Q(ime__icontains = pojam) | Q(prezime__icontains = pojam)).count()
 	if korisnici_count > 0:
-	  korisnici = Korisnici.objects.filter(ime__icontains = word)
+	  korisnici = Korisnici.objects.filter(Q(ime__icontains = pojam) | Q(prezime__icontains = pojam))	 
 	else:
-	  message = "Nisu pronadjeni rezultati."
+	  message = "Nisu pronadeni rezultati." 
     if request.POST.get('brisanje'):
       brisanje_id = request.POST['id']
       if brisanje_id != u_id:
@@ -314,6 +320,7 @@ def centar(request, c_id):
 	rad = Radnici.objects.get( radnik = kor)
 	rad.delete()
 	message = "Korisnik prebacen u obicne korisnike"
+	
     if request.POST.get('izbrisiradnika'):
       u_id = request.POST.get('id')
       kor = Korisnici.objects.get(id = u_id)
@@ -321,6 +328,7 @@ def centar(request, c_id):
       if radnici_count > 0:
 	kor.delete()
 	message = "Radnik izbrisan"
+	
     radnici_count = Radnici.objects.filter(centar = centar).count()
     radnici_kor = []
     if radnici_count > 0:
@@ -329,6 +337,7 @@ def centar(request, c_id):
 	radnici_kor.append(radnik.radnik)
     korisnik = Korisnici.objects.get (id = request.session.get('id'))    
     formcentar = CentarRegister(initial={'naziv': centar.naziv, 'adresa' : centar.adresa})
+    
     return render_to_response("Centar/centar.html", {"korisnik" : korisnik, 'message' : message, 'centar' : centar, 'formcentar' : formcentar, 'registerform' : registerform, 'radnici' : radnici_kor}, context_instance = RequestContext(request))
   else:
     raise Http404
@@ -354,11 +363,11 @@ def emp_tereni(request, u_id):
     centar = radnik.centar
         
     tereni_count = Tereni.objects.filter(centar=centar).count()
-
+    tereni=0
+    
     if tereni_count > 0:
       tereni = Tereni.objects.filter(centar=centar)
-    else:
-      tereni=0
+    else:      
       message="Trenutno nema registrovanih terena u sport centru."
 	
     if request.POST.get('brisanje'):
@@ -367,6 +376,7 @@ def emp_tereni(request, u_id):
 	  terendel = Tereni.objects.filter(id = brisanje_id)
 	  terendel.delete()
 	  message="Teren izbrisan!"
+	  return HttpResponseRedirect(reverse('Centar.views.emp_tereni', args=(korisnik.id,)))  
       else:
 	  message = "Doslo je do greske prilikom brisanja terena."
 
@@ -379,12 +389,11 @@ def emp_tereni(request, u_id):
 	teren.save()
 	message = "Teren dodan."
         formteren = TerenRegister()
-      return render_to_response("Centar/emp_tereni.html", {'info_message' : message, 'korisnik' : korisnik, 'tereni' : tereni, 'centar' : centar, 'formteren' : formteren}, context_instance = RequestContext(request))
-      
+        tereni = Tereni.objects.filter(centar=centar)
+      return HttpResponseRedirect(reverse('Centar.views.emp_tereni', args=(korisnik.id,)))      
     formteren = TerenRegister()
-	
-    return render_to_response("Centar/emp_tereni.html", {'info_message' : message, 'korisnik' : korisnik, 'tereni' : tereni, 'centar' : centar, 'formteren' : formteren}, context_instance = RequestContext(request))
-        
+    tereni = Tereni.objects.filter(centar=centar)
+    return render_to_response("Centar/emp_tereni.html", {'info_message' : message, 'korisnik' : korisnik, 'tereni' : tereni, 'centar' : centar, 'formteren' : formteren}, context_instance = RequestContext(request))        
   else:
     raise Http404
   
@@ -393,10 +402,27 @@ def emp_korisnici(request, u_id):
     message = ''
     
     korisnik = Korisnici.objects.get(id = u_id)
-    kid = korisnik.id
+    radnik = Radnici.objects.get(radnik = korisnik)
+    centar = radnik.centar
+    vrsta=Privilegije.objects.get(tip='user')
+                
+    korisnici_count = Korisnici.objects.filter(vrsta=vrsta).count()
+    korisnici=0
     
-    
-    return render_to_response("Centar/emp_korisnici.html", {'info_message' : message, 'korisnik' : korisnik}, context_instance = RequestContext(request))
+    if korisnici_count > 0:
+      korisnici = Korisnici.objects.filter(vrsta=vrsta)
+
+    form = UserSearch()
+    if request.POST.get('pretraga'):
+      form = UserSearch(request.POST)
+      if form.is_valid():
+	pojam = form.cleaned_data['pojam']
+	korisnici_count = Korisnici.objects.filter((Q(ime__icontains = pojam) | Q(prezime__icontains = pojam)) & Q(vrsta=vrsta)).count()
+	if korisnici_count > 0:
+	  korisnici = Korisnici.objects.filter((Q(ime__icontains = pojam) | Q(prezime__icontains = pojam)) & Q(vrsta=vrsta))	  	  
+	else:
+	  message = "Nisu pronadeni rezultati. Svi korisnicu su izlistani ispod." 
+    return render_to_response("Centar/emp_korisnici.html", {'info_message' : message, 'korisnik' : korisnik,'korisnici' : korisnici, 'form' : form}, context_instance = RequestContext(request))
   else:
     raise Http404
   

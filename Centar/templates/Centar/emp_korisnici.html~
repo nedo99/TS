@@ -1,1 +1,54 @@
- 
+Admin panel sportskog centra {{ centar.naziv }}<br>
+Administrator {{korisnik.ime}} {{korisnik.prezime}}<br><br>
+
+<a href="{% url 'out' %}">Odjavi se</a>
+<a href="{% url 'employee' korisnik.id %}">Nazad</a>
+
+{% if info_message %}<p><strong>{{ info_message}}</strong></p>{% endif %} <br>
+
+
+<h3>Pretrazivanje korisnika po imenu ili prezimenu:</h3>
+
+<form action="{% url 'emp_korisnici' korisnik.id %}" method="post">{% csrf_token %}
+{% for field in form %}
+        <div class="fieldWrapper">      
+        
+           {{ field.label_tag }}{{ field }}
+           {{ field.errors }}
+        </div>
+    {% endfor %}
+{% if form %} <input type="submit" name = 'pretraga' value="Trazi" /> {% endif %}
+</form>
+
+
+<br><br>
+
+{% if korisnici %}
+<h3>Pregled korisnika:</h3>
+
+<table border = 1>
+  <tr>
+    <td>Ime i prezime</td>
+    <td>Korisnicko ime</td>
+    <td>E-mail</td>
+    <td>Telefon</td>
+    <td>Adresa</td>
+    <td>Datum rodenja</td>
+  </tr>
+ {% for k in korisnici %}    
+      <tr>
+	<td>{{ k.ime }} {{k.prezime}}</td>
+	<td>{{ k.username }}</td>
+	<td>{{ k.mail}}</td>
+	<td> {{ k.telefon }} </td>
+	<td> {{ k.adresa }}</td>
+	<td> {{ k.datum_rodjenja }}</td>	
+      </tr>
+    
+ {% endfor %}
+{% else %}
+
+Trenutno nema registrovanih korisnika u sistemu.
+
+{% endif %}
+
