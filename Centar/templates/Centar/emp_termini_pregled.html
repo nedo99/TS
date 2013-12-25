@@ -1,0 +1,31 @@
+Admin panel sportskog centra {{ centar.naziv }}<br>
+Administrator {{korisnik.ime}} {{korisnik.prezime}}<br><br>
+
+<a href="{% url 'out' %}">Odjavi se</a>
+<a href="{% url 'emp_termini' korisnik.id %}">Nazad</a>
+
+{% if info_message %}<p><strong>{{ info_message}}</strong></p>{% endif %} <br>
+
+
+<h3>Teren: {{ teren.naziv }} <br> Sport: {{ teren.sport }} <br> 
+
+<h4> Pregled termina za narednih 10 dana: </h4>
+
+{% for i, k in da %}
+<table border=1>
+<tr colspan = 2>
+    <td>{{ i }} <input type=hidden name= dan value = {{ i }}></td> 
+    <td>Akcija</td>
+</tr>
+  {% for j in k %}
+  <form action="{% url 'emp_termini_pregled' teren.id %}" method="post">{% csrf_token %}
+    {% if j == 0 %}
+      <tr bgcolor="green"><td><input type=hidden name=date value="{{ i }}">{{ forloop.counter0|add:"8" }}:00 - {{ forloop.counter0|add:"9" }}:00</td><td><input type=hidden name=order value={{ forloop.counter0|add:"8"}}><input type=submit value=Rezervisi></td></tr>
+    {% else %}
+      <tr bgcolor="red"><td><input type=hidden name=date value="{{ i }}">{{ forloop.counter0|add:"8" }}:00 - {{ forloop.counter0|add:"9" }}:00</td><td><input type=hidden name=order value={{ forloop.counter0|add:"8"}}>Rezervisao korisnik {{j.ime}} {{j.prezime}} </td></tr>
+    {% endif %}
+    
+    </form>
+    {% endfor %}
+    </table><br>
+{% endfor %}

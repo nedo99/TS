@@ -492,10 +492,116 @@ def emp_termini(request, u_id):
   if usercheck(request, u_id, 'admin'):
     message = ''
     
+    tereni=0
     korisnik = Korisnici.objects.get(id = u_id)
-    kid = korisnik.id
+    radnik = Radnici.objects.get(radnik = korisnik)
+    centar = radnik.centar
+    tereni = Tereni.objects.filter(centar=centar)
     
-    return render_to_response("Centar/emp_termini.html", {'info_message' : message, 'korisnik' : korisnik}, context_instance = RequestContext(request))
+    
+    return render_to_response("Centar/emp_termini.html", {'info_message' : message, 'korisnik' : korisnik, 'tereni' : tereni}, context_instance = RequestContext(request))
+  else:
+    raise Http404
+
+def emp_termini_pregled(request, t_id):
+  if usercheck(request, request.session.get('id'), 'admin'):
+    korisnik = Korisnici.objects.get(id = request.session.get('id'))
+    message = ''
+    
+    radnik = Radnici.objects.get(radnik = korisnik)
+    centar = radnik.centar
+    
+    terend = Tereni.objects.get( id = t_id)
+        
+    if request.POST:
+      number = request.POST['order']
+      dan = request.POST['date']
+      if number > 7 or number < 22:
+	pocetak = dan +' ' + number +':00'
+	kraj = dan + ' ' + str(int(number)+1) +':00'
+	pocetak_object = datetime.strptime(pocetak, '%b. %d, %Y %H:%M')
+	kraj_object = datetime.strptime(kraj, '%b. %d, %Y %H:%M')
+	rezervacije_count = Rezervacije.objects.filter(teren = terend, pocetak = pocetak_object).count()
+	if rezervacije_count == 0:
+	  r = Rezervacije(teren = terend, korisnik = korisnik, pocetak = pocetak_object, kraj = kraj_object, koristeno = 0 )
+	  r.save()
+	  message = 'Termin rezervisan.'
+	  return HttpResponseRedirect(reverse('Centar.views.emp_termini_pregled', args=(terend.id,))) 
+	else:
+	  message = "Termin zauzet."
+      else:
+	message = 'Pogresno uneseni podaci.'
+	  
+    now = timezone.now()
+    rezervacije_count = Rezervacije.objects.filter(teren = terend).count()
+    rezervacije = 0
+    
+    if rezervacije_count > 0:
+      rezervacije = Rezervacije.objects.filter(teren = terend)
+      
+    dani = []
+    for i in range (0, 9):
+      dani.append(date.today() + timedelta(i+1))
+      
+    brojevi = []
+    for i in range (0, 14):
+      brojevi.append(i)
+      
+    brojevi1 = []
+    for i in range (0, 10):
+      brojevi1.append(i)
+      
+    ttable = []
+    for j in range(0,9):
+      #ttable.append(j)
+      be = []
+      for i in range(0, 14):
+	a = 0
+	if rezervacije != 0:
+	  for rezervacija in rezervacije:
+	    if dani[j] == rezervacija.pocetak.date():
+	      if (i+8) == rezervacija.pocetak.hour:
+		be.append(rezervacija.korisnik)
+		a = 1
+	if a == 0:
+	  be.append(0)
+      ttable.append(be)
+      
+    da = izip(dani, ttable)
+    return render_to_response("Centar/emp_termini_pregled.html", { 'korisnik' : korisnik, 'teren' : terend, 'rezervacije' : rezervacije, 'centar' : centar, 'dani' : dani, 'brojevi' : brojevi, 'brojevi1' : brojevi1, 'message' : message, 'table' : ttable, 'da' : da}, context_instance = RequestContext(request))
+  else:
+    raise Http404
+
+def emp_termini_neiskor(request, t_id):
+  if usercheck(request, request.session.get('id'), 'admin'):
+    korisnik = Korisnici.objects.get(id = request.session.get('id'))
+    message = ''
+        
+    teren=Tereni.objects.get(id=t_id)
+   
+    if request.POST:
+      ter_id = request.POST['id']
+      termin = Rezervacije.objects.get(id = ter_id)
+      termin.koristeno=1
+      termin.save()
+      return HttpResponseRedirect(reverse('Centar.views.emp_termini_neiskor', args=(t_id,))) 
+      message = "Status termina promijenjen u iskoristen."
+    
+    now=timezone.now()
+    
+    rezervacije_all=Rezervacije.objects.all()
+    rezervacije_all_count=Rezervacije.objects.all().count()
+    
+    if rezervacije_all_count>0:
+      rezervacije = []
+      for r in rezervacije_all:
+	if r.koristeno == 0:
+	  if r.teren==teren:
+	    if r.pocetak<now:
+	      rezervacije.append(r)	  
+	  
+    return render_to_response("Centar/emp_termini_neiskor.html", {'info_message' : message, 'teren' : teren, 'rezervacije' : rezervacije, 'korisnik' : korisnik}, context_instance = RequestContext(request))
+    
   else:
     raise Http404
   

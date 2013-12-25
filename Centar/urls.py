@@ -16,4 +16,6 @@ urlpatterns = patterns('',
     url(r'^employee/(?P<u_id>\d+)/termini/$', views.emp_termini, name='emp_termini'),
     url(r'^employee/(?P<u_id>\d+)/korisnici/$', views.emp_korisnici, name='emp_korisnici'),
     url(r'^employee/(?P<u_id>\d+)/tereni/$', views.emp_tereni, name='emp_tereni'),
+    url(r'^employee/teren/(?P<t_id>\d+)/termini/neiskoristeni/$', views.emp_termini_neiskor, name='emp_termini_neiskor'),
+    url(r'^employee/teren/(?P<t_id>\d+)/termini/pregled/$', views.emp_termini_pregled, name='emp_termini_pregled'),
 )

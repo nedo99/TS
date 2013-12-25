@@ -1,1 +1,35 @@
-sdasdsa 
+
+Admin panel sportskog centra {{ centar.naziv }}<br>
+Administrator {{korisnik.ime}} {{korisnik.prezime}}<br><br>
+
+<a href="{% url 'out' %}">Odjavi se</a>
+<a href="{% url 'employee' korisnik.id %}">Nazad</a>
+
+{% if info_message %}<p><strong>{{ info_message}}</strong></p>{% endif %} <br>
+
+
+<h3>Odaberi teren za prikaz termina u narednih 10 dana:</h3>
+
+{% if tereni %}
+    <ul>
+    {% for t in tereni %}
+        <li><a href="{% url 'emp_termini_pregled' t.id %}">{{ t.naziv }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Nema unesenih podataka o terenima u sport centru.</p>
+{% endif %}
+
+<br><br>
+
+<h3>Odaberi teren za prikaz neiskoristenih termina:</h3>
+
+{% if tereni %}
+    <ul>
+    {% for t in tereni %}
+        <li><a href="{% url 'emp_termini_neiskor' t.id %}">{{ t.naziv }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Nema unesenih podataka o terenima u sport centru.</p>
+{% endif %}

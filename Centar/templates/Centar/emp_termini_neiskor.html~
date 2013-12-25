@@ -1,0 +1,37 @@
+Admin panel sportskog centra {{ centar.naziv }}<br>
+Administrator {{korisnik.ime}} {{korisnik.prezime}}<br><br>
+
+<a href="{% url 'out' %}">Odjavi se</a>
+<a href="{% url 'emp_termini' korisnik.id %}">Nazad</a>
+
+{% if info_message %}<p><strong>{{ info_message}}</strong></p>{% endif %} <br>
+
+
+<h3>Teren: {{ teren.naziv }} <br> Sport: {{ teren.sport }} <br> 
+
+<h4> Pregled neiskoristenih termina: </h4>
+
+{% if rezervacije %}  
+  <form action="{% url 'emp_termini_naiskor' teren.id %}" method="post">{% csrf_token %}
+    <table border = '1'>
+      <tr>
+	  <td>Pocetak termina </td>
+	  <td>Kraj termina</td> 
+	  <td>Korisnik</td> 
+	  <td>Akcija</td> 
+      </tr>
+
+      {% for rezervacija in rezervacije %}
+	<tr>
+	  <td> <input type ="hidden" name= "id" value = {{rezervacija.id}} > {{rezervacija.pocetak }} </td>
+	  <td>{{rezervacija.kraj}}</td>
+	  <td>{{ rezervacija.korisnik.ime }} {{ rezervacija.korisnik.prezime }}</td> 
+	  <td><input type="submit" value="Oznaci kao iskoristen"></td> 
+	</tr>
+
+      {% endfor %}
+    </table>
+  </form>
+{% else %}
+Nema neiskoristenih termina.
+{% endif %}
