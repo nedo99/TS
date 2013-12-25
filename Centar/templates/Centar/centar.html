@@ -18,8 +18,9 @@ function showStuff(n) {
 <a href="#" onclick="showStuff('radnikdod');">Dodaj radnika za ovaj centar</a><br>
 <a href="{% url 'superadmin' korisnik.id %}">Nazad</a><br>
 <a href="{% url 'out' %}">Odjavi se</a><br>
+<br><br>
 
-<div id='centaredit' style="visibility:hidden;">
+<div id='centaredit' style="visibility:{{ vidi }};">
 <form action="{% url 'centar' centar.id %}" method="post">{% csrf_token %}
 {% for field in formcentar %}
         <div class="fieldWrapper">
@@ -35,7 +36,7 @@ function showStuff(n) {
 </div>
 <br>
 
-<div id='radnikdod' style="visibility:hidden;">
+<div id='radnikdod' style="visibility:{{ vidi }};">
 
 <form action="{% url 'centar' centar.id %}" method="post">{% csrf_token %}
 {% for field in registerform %}
@@ -54,7 +55,7 @@ function showStuff(n) {
 
 {% if radnici %}
 
-<div id='radnikedit' style="visibility:hidden;">
+<div id='radnikedit' style="visibility:{{ vidi }};">
    <br>
   
   <table border =1>

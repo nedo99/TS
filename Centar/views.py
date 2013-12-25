@@ -360,6 +360,7 @@ def superadmin(request, u_id):
   
 def centar(request, c_id):
   message = ""
+  vidi = 'hidden'
   if usercheck(request, request.session.get('id'), 'superadmin'):
     registerform = RegisterForm()
     if request.POST.get('izmjeni'):
@@ -435,7 +436,9 @@ def centar(request, c_id):
 		return HttpResponseRedirect('/Centar/superadmin/centar/' + c_id + '/')
 	      else:
 		message = "Korisnik sa unesenim korisnickim imenom vec postoji"
-    
+		vidi = 'visible'
+	else:
+	  vidi = 'visible'
     request.session['centar'] = c_id
     if request.POST.get('obicnikorisnik'):
       u_id = request.POST.get('id')
@@ -466,7 +469,7 @@ def centar(request, c_id):
     korisnik = Korisnici.objects.get (id = request.session.get('id'))    
     formcentar = CentarRegister(initial={'naziv': centar.naziv, 'adresa' : centar.adresa})
     
-    return render_to_response("Centar/centar.html", {"korisnik" : korisnik, 'message' : message, 'centar' : centar, 'formcentar' : formcentar, 'registerform' : registerform, 'radnici' : radnici_kor}, context_instance = RequestContext(request))
+    return render_to_response("Centar/centar.html", {"korisnik" : korisnik, 'message' : message, 'centar' : centar, 'formcentar' : formcentar, 'registerform' : registerform, 'radnici' : radnici_kor, 'vidi' : vidi}, context_instance = RequestContext(request))
   else:
     raise Http404
   
