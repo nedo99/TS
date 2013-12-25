@@ -69,7 +69,13 @@ class TerenRegister(forms.Form):
      sport = forms.CharField(max_length=20)
 
 def index(request):
-    if request.POST:
+    if usercheck(request, request.session.get('id'), 'user'):
+      return HttpResponseRedirect("/Centar/user/" + str (request.session.get('id')))
+    elif usercheck(request, request.session.get('id'), 'admin'):
+      return HttpResponseRedirect("/Centar/employee/" + str(request.session.get('id')))
+    elif usercheck(request, request.session.get('id'), 'superadmin'):
+	    return HttpResponseRedirect("/Centar/superadmin/" + str(request.session.get('id')))
+    elif request.POST:
       form = LoginForm(request.POST)
       if form.is_valid():
 	user = form.cleaned_data['korisnicko_ime']
@@ -101,7 +107,13 @@ def index(request):
       return render_to_response("Centar/index.html", {'form': form}, context_instance = RequestContext(request))
       
 def register(request):
-    if request.POST:
+    if usercheck(request, request.session.get('id'), 'user'):
+      return HttpResponseRedirect("/Centar/user/" + str (request.session.get('id')))
+    elif usercheck(request, request.session.get('id'), 'admin'):
+      return HttpResponseRedirect("/Centar/employee/" + str(request.session.get('id')))
+    elif usercheck(request, request.session.get('id'), 'superadmin'):
+	    return HttpResponseRedirect("/Centar/superadmin/" + str(request.session.get('id')))
+    elif request.POST:
       form = RegisterForm(request.POST) # A form bound to the POST data
       if form.is_valid():
 	  user = form.cleaned_data['username']
