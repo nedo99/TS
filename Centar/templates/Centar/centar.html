@@ -1,5 +1,7 @@
-Pozdrav {{ korisnik.ime }}
-<br>
+Pozdrav {{ korisnik.ime }}!<br>
+
+Dobro dosli na superadmin profil.<br><br>
+
 {% if message %} <strong> {{ message }} </strong> {% endif %}<br>
 <h4>{{ centar.naziv }} </h4> <strong> {{ centar.adresa }} </strong><br>
 
@@ -11,11 +13,12 @@ function showStuff(n) {
 	  document.getElementById(n).style.visibility = 'hidden';
 }
 </script>
-<a href="#" onclick="showStuff('centaredit');">Promjeni informacije o centru</a><br>
+<a href="#" onclick="showStuff('centaredit');">Izmijeni informacije o centru</a><br>
 <a href="#" onclick="showStuff('radnikedit');">Lista radnika</a><br>
 <a href="#" onclick="showStuff('radnikdod');">Dodaj radnika za ovaj centar</a><br>
 <a href="{% url 'superadmin' korisnik.id %}">Nazad</a><br>
 <a href="{% url 'out' %}">Odjavi se</a><br>
+
 <div id='centaredit' style="visibility:hidden;">
 <form action="{% url 'centar' centar.id %}" method="post">{% csrf_token %}
 {% for field in formcentar %}
@@ -26,7 +29,7 @@ function showStuff(n) {
         </div>
     {% endfor %}
 
-{% if formcentar %} <input type="submit" name=izmjeni value="Izmjeni" /><br>
+{% if formcentar %} <input type="submit" name=izmjeni value="Izmijeni" /><br>
 		    <input type=submit name="brisi" value="Brisi centar">{% endif %}
 </form>
 </div>

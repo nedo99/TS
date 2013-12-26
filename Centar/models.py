@@ -11,7 +11,7 @@ class Korisnici(models.Model):
     password = models.CharField(max_length=50)
     ime = models.CharField(max_length=20)
     prezime = models.CharField(max_length=20)
-    mail = models.CharField(max_length=50)
+    mail = models.CharField(max_length=254)
     telefon = models.CharField(max_length=20)
     adresa = models.CharField(max_length=200)
     datum_rodjenja = models.DateTimeField('datum rodjenja')

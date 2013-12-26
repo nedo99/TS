@@ -1,4 +1,4 @@
-Pozdrav {{ korisnik.ime }} <br>
+Pozdrav {{ korisnik.ime }}!<br>
 
 Dobro dosli na superadmin profil.<br><br>
 <script type="text/javascript">
@@ -9,7 +9,6 @@ function showStuff(n) {
 	  document.getElementById(n).style.visibility = 'hidden';
 }
 </script>
-<a href="#" onclick="showStuff('listacentara');">Lista centara</a><br>
 <a href="{% url 'out' %}">Odjavi se</a>
 <br>
 {% if message %} <strong> {{ message }} </strong> {% endif %}

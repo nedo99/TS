@@ -1,4 +1,4 @@
-Pozdrav {{ korisnik.ime }} <br>
+Pozdrav {{ korisnik.ime }}!<br>
 
 Dobro dosli na superadmin profil.<br><br>
 <script type="text/javascript">
@@ -67,7 +67,7 @@ Lista centara. Klikni na centar za dodatne opcije <br>
     <a href ="{% url 'centar' centar.id %}">{{ centar.naziv }}</a> {{ centar.adresa }} <br>
   {% endfor %}
 {% else %}
-  Trenotno nema sport centara u bazi.
+  Trenetno nema sport centara u sistemu.
 {% endif %}
 </td>
 </tr>

@@ -13,7 +13,7 @@ function showStuff(n) {
 </script>
 <a href="#" onclick="showStuff('rezervacije');">Pregled rezervacija</a><br>
 <a href="#" onclick="showStuff('rezervisi');">Rezervisi termin</a><br>
-<a href="{% url 'kor_edit' korisnik_id %}">Izmjeni profilne informacije</a><br>
+<a href="{% url 'kor_edit' korisnik.id %}">Izmjeni profilne informacije</a><br>
 <a href="{% url 'out' %}">Odjavi se</a><br>
 
 <table>
